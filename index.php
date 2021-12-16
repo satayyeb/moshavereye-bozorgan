@@ -1,9 +1,32 @@
 <?php
-$question = 'این یک پرسش نمونه است';
-$msg = 'این یک پاسخ نمونه است';
-$en_name = 'hafez';
-$fa_name = 'حافظ';
+
+//get the names from json file
+$json = json_decode(file_get_contents('people.json'), true);
+$en_names_array = array_keys($json);
+
+//if the form filled and posted
+if (isset($_POST["question"]) and $_POST['question'] != '') {
+    $question = $_POST["question"];
+    $en_name = $_POST["person"];
+    $fa_name = $json[$en_name];
+
+    //generating an answer
+    $code = intval(hash('sha256', $question . $fa_name)) % 16;
+    $answers = file('messages.txt');
+    $msg = $answers[$code];
+
+    //check the question
+    if (!str_starts_with($question, "آیا") or (!str_ends_with($question, "?") and !str_ends_with($question, "؟"))) {
+        $msg = 'سوال درستی پرسیده نشده';
+    }
+} else {    //if nothing posted
+    $question = '';
+    $en_name = array_rand($json);
+    $fa_name = $json[$en_name];
+    $msg = 'سوال خود را بپرس!';
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,40 +35,38 @@ $fa_name = 'حافظ';
     <title>مشاوره بزرگان</title>
 </head>
 <body>
-<p id="copyright">تهیه شده برای درس کارگاه کامپیوتر،دانشکده کامییوتر، دانشگاه صنعتی شریف</p>
-<div id="wrapper">
-    <div id="title">
-        <span id="label">پرسش:</span>
-        <span id="question"><?php echo $question ?></span>
-    </div>
-    <div id="container">
-        <div id="message">
-            <p><?php echo $msg ?></p>
+    <p id="copyright">تهیه شده برای درس کارگاه کامپیوتر،دانشکده کامییوتر، دانشگاه صنعتی شریف</p>
+    <div id="wrapper">
+        <div id="title">
+            <span id="label"> <?php if ($question != NULL) echo "پرسش:" ?> </span>
+            <span id="question"><?php echo $question ?></span>
         </div>
-        <div id="person">
+        <div id="container">
+            <div id="message">
+                <p><?php echo $msg ?></p>
+            </div>
             <div id="person">
-                <img src="images/people/<?php echo "$en_name.jpg" ?>"/>
-                <p id="person-name"><?php echo $fa_name ?></p>
+                <div id="person">
+                    <img src="images/people/<?php echo "$en_name.jpg" ?>"/>
+                    <p id="person-name"><?php echo $fa_name ?></p>
+                </div>
             </div>
         </div>
+        <div id="new-q">
+            <form method="post" action="index.php">
+                سوال
+                <input type="text" name="question" value="<?php echo $question ?>" maxlength="150" placeholder="..."/>
+                را از
+                <select name="person">
+                    <?php foreach ($en_names_array as $name) { ?>
+                        <option value=<?php echo $name;
+                                        if ($name == $en_name) echo ' selected'; ?>> <?php echo $json[$name]; ?></option>
+                    <?php } ?>
+                </select>
+                <input type="submit" value="بپرس"/>
+            </form>
+        </div>
     </div>
-    <div id="new-q">
-        <form method="post">
-            سوال
-            <input type="text" name="question" value="<?php echo $question ?>" maxlength="150" placeholder="..."/>
-            را از
-            <select name="person">
-                <?php
-                /*
-                 * Loop over people data and
-                 * enter data inside `option` tag.
-                 * E.g., <option value="hafez">حافظ</option>
-                 */
-                ?>
-            </select>
-            <input type="submit" value="بپرس"/>
-        </form>
-    </div>
-</div>
 </body>
+
 </html>
