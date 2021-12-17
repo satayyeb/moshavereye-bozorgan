@@ -1,5 +1,16 @@
 <?php
 
+// // for older PHP versions(under php 8) uncomment these functions:
+//
+// function str_starts_with ( $haystack, $needle ) {
+//     return strpos( $haystack , $needle ) === 0;
+// } 
+// function str_ends_With($haystack, $needle) {
+//     $length = strlen($needle);
+//     return $length > 0 ? substr($haystack, -$length) === $needle : true;
+// }
+//
+
 //get the names from json file
 $json = json_decode(file_get_contents('people.json'), true);
 $en_names_array = array_keys($json);
